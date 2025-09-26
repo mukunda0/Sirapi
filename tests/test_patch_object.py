@@ -1,37 +1,42 @@
 import pytest
+import allure
 from src.api_client import APIClient
 
 client = APIClient()
 
-
 @pytest.fixture(scope="module")
 def test_object_id():
-    """Create a fresh object for testing and return its ID"""
     payload = {"name": "Test Device", "data": {"year": 2024, "price": 1000}}
     response = client.create_object(payload)
     assert response.status_code == 200
     return response.json()["id"]
 
+@allure.title("Patch object name successfully")
 def test_patch_valid_name(test_object_id):
-    response = client.patch_object(test_object_id, {"name": "Updated Device"})
-    assert response.status_code == 200
-    body = response.json()
-    assert body["name"] == "Updated Device"
+    with allure.step("Patch name to 'Updated Device'"):
+        response = client.patch_object(test_object_id, {"name": "Updated Device"})
+        assert response.status_code == 200
+        body = response.json()
+        assert body["name"] == "Updated Device"
 
+@allure.title("Patch nested field 'year' successfully")
 def test_patch_valid_nested_field(test_object_id):
-    response = client.patch_object(test_object_id, {"data": {"year": 2025}})
-    assert response.status_code == 200
-    body = response.json()
-    assert body["data"]["year"] == 2025
+    with allure.step("Patch data.year to 2025"):
+        response = client.patch_object(test_object_id, {"data": {"year": 2025}})
+        assert response.status_code == 200
+        body = response.json()
+        assert body["data"]["year"] == 2025
 
+@allure.title("Patch with invalid object ID")
 def test_patch_invalid_id():
     response = client.patch_object("invalid-id-123", {"name": "Test"})
     assert response.status_code == 404
 
+@allure.title("Patch with empty payload")
 def test_patch_empty_payload(test_object_id):
     response = client.patch_object(test_object_id, {})
-    # API may respond differently depending on backend test
     assert response.status_code in [200, 400, 404]
+
 """
 def test_patch_empty_payload():
     # Create a new object

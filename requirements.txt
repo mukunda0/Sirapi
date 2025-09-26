@@ -1,2 +1,3 @@
 Pytest
 Requests
+allure-pytest
